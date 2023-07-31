@@ -115,3 +115,100 @@ rule claimAllRewards_cover_claimRewards() {
     // postcondition
     assert balanceAfterClaimAll >= balanceAfterClaim;
 }
+
+/**
+ * claimRewards and claimRewardsOnBehalf are equivalent if the user param of claimRewardsOnBehalf is msg.sender
+ */
+rule claim_and_claimOnBehalf_are_equivalent() {
+    storage init = lastStorage;
+    env e;
+    address[] assets;
+    uint256 amount;
+    address to;
+    address reward;
+
+    // action 1
+    claimRewards(e, assets, amount, to, reward);
+    // effect 1
+    storage afterClaim = lastStorage;
+
+    // action 2
+    claimRewardsOnBehalf(e, assets, amount, e.msg.sender, to, reward) at init;
+    // effect 2
+    storage afterClaimOnBehalf = lastStorage;
+
+    // postcondition
+    assert afterClaim == afterClaimOnBehalf;
+}
+
+/**
+ * claimRewards and claimRewardsToSelf are equivalent if the to param of claimRewards is msg.sender
+ */
+rule claim_and_claimToSelf_are_equivalent() {
+    storage init = lastStorage;
+    env e;
+    address[] assets;
+    uint256 amount;
+    address reward;
+
+    // action 1
+    claimRewards(e, assets, amount, e.msg.sender, reward);
+    // effect 1
+    storage afterClaim = lastStorage;
+    
+    // action 2
+    claimRewardsToSelf(e, assets, amount, reward) at init;
+    // effect 2
+    storage afterClaimToSelf = lastStorage;
+
+    // postcondition
+    assert afterClaim == afterClaimToSelf;
+}
+
+/**
+ * claimAllRewards and claimAllRewardsOnBehalf are equivalent if 
+ * the user param of claimAllRewardsOnBehalf is msg.sender
+ */
+rule claimAll_and_claimAllOnBehalf_are_equivalent() {
+    storage init = lastStorage;
+    env e;
+    address[] assets;
+    address to;
+
+    // action 1
+    claimAllRewards(e, assets, to);
+    // effect 1
+    storage afterClaim = lastStorage;
+
+    // action 2
+    claimAllRewardsOnBehalf(e, assets, e.msg.sender, to) at init;
+    // effect 2
+    storage afterClaimOnBehalf = lastStorage;
+
+    // postcondition
+    assert afterClaim == afterClaimOnBehalf;
+}
+
+
+/**
+ * claimAllRewards and claimAllToSelf are equivalent if 
+ * the to param of claimAllRewards is msg.sender
+ */
+rule claimAll_and_claimAllToSelf_are_equivalent() {
+    storage init = lastStorage;
+    env e;
+    address[] assets;
+
+    // action 1
+    claimAllRewards(e, assets, e.msg.sender);
+    // effect 1
+    storage afterClaim = lastStorage;
+
+    // action 2
+    claimAllRewardsToSelf(e, assets) at init;
+    // effect 2
+    storage afterClaimToSelf = lastStorage;
+
+    // postcondition
+    assert afterClaim == afterClaimToSelf;
+}
