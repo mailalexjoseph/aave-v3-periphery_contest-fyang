@@ -12,6 +12,8 @@ build/
 
 deployed-contracts.json
 
+.certora_internal
+
 coverage
 .coverage_artifacts
 .coverage_cache
