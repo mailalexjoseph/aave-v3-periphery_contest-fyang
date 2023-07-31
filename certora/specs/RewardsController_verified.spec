@@ -1,4 +1,4 @@
-import "RewardsController_base.spec";
+import "methods/Methods_base.spec";
 
 using DummyERC20_rewardToken as REWARD;
 
