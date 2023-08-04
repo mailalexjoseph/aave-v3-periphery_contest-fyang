@@ -76,13 +76,13 @@ rule integrity_of_claimAllRewards() {
 
     // effects
     mathint strategyBalanceDecrease = strategyBalanceBefore - strategyBalanceAfter;
-    mathint strategyBalanceDecreaseB = strategyBalanceAfterB - strategyBalanceBeforeB;
+    mathint strategyBalanceDecreaseB = strategyBalanceBeforeB - strategyBalanceAfterB;
     mathint userBalanceIncrease = userBalanceAfter - userBalanceBefore;
     mathint userBalanceIncreaseB = userBalanceAfterB - userBalanceBeforeB;
 
     // postconditions
     assert strategyBalanceDecrease == to_mathint(amounts[0]);
     assert userBalanceIncrease == to_mathint(amounts[0]);
-    // assert strategyBalanceDecreaseB == to_mathint(amounts[1]);
-    // assert userBalanceIncreaseB == to_mathint(amounts[1]);
+    assert strategyBalanceDecreaseB == to_mathint(amounts[1]);
+    assert userBalanceIncreaseB == to_mathint(amounts[1]);
 }
