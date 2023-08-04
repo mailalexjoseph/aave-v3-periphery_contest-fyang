@@ -5,6 +5,7 @@ using DummyERC20_rewardToken as REWARD;
 methods {
     function getTransferStrategy(address) external returns (address) envfree;
     function isContract(address) external returns (bool) envfree;
+    function getUserRewards(address[], address, address) external returns (uint256) envfree; 
     function getRewardsList() external returns (address[]) envfree;
     function REWARD.balanceOf(address) external returns (uint256) envfree;
 }
@@ -211,4 +212,40 @@ rule claimAll_and_claimAllToSelf_are_equivalent() {
 
     // postcondition
     assert afterClaim == afterClaimToSelf;
+}
+
+
+/**
+ * claimRewards function call decrease the transfer strategy's reward balance and 
+ * increase recipient's reward balance by the return value of the function call, and
+ * the return value is not more than the amount parameter. 
+ */
+rule integrity_of_claimRewards() {
+    env e;
+    address[] assets;
+    uint256 amount;
+    address to;
+
+    address transferStrategy = getTransferStrategy(REWARD);
+
+    // precondition
+    require to != transferStrategy;
+
+    uint256 strategyBalanceBefore = REWARD.balanceOf(transferStrategy);
+    uint256 userBalanceBefore = REWARD.balanceOf(to);
+
+    // action
+    uint256 claimed = claimRewards(e, assets, amount, to, REWARD);
+
+    uint256 strategyBalanceAfter = REWARD.balanceOf(transferStrategy);
+    uint256 userBalanceAfter = REWARD.balanceOf(to);
+
+    // effects
+    mathint strategyBalanceDecrease = strategyBalanceBefore - strategyBalanceAfter;
+    mathint userBalanceIncrease = userBalanceAfter - userBalanceBefore;
+
+    // postconditions
+    assert claimed <= amount;
+    assert strategyBalanceDecrease == to_mathint(claimed);
+    assert userBalanceIncrease == to_mathint(claimed);
 }
