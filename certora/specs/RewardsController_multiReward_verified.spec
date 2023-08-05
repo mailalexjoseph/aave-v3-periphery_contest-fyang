@@ -51,38 +51,67 @@ rule integrity_of_claimAllRewards() {
     address[] assets;
     address to;
     
-    address[] rewardsList = getRewardsList();   
+    address[] rewards = getRewardsList();   
     // precondition
     require to != transferStrategy;
     require assets.length > 0;
-    require rewardsList.length >= 2;
+    require rewards.length >= 2;
+    require rewards[0] == REWARD && rewards[1] == REWARD_B;
 
     uint256 strategyBalanceBefore = REWARD.balanceOf(transferStrategy);
-    uint256 strategyBalanceBeforeB = REWARD_B.balanceOf(transferStrategy);
+    uint256 strategyBalanceBefore_B = REWARD_B.balanceOf(transferStrategy);
     uint256 userBalanceBefore = REWARD.balanceOf(to);
-    uint256 userBalanceBeforeB = REWARD_B.balanceOf(to);
+    uint256 userBalanceBefore_B = REWARD_B.balanceOf(to);
 
-    address[] rewards;
     uint256[] amounts;
 
     // action
-    rewards, amounts = claimAllRewards(e, assets, to);
-    require rewards[0] == REWARD && rewards[1] == REWARD_B;
-
-    uint256 strategyBalanceAfter = REWARD.balanceOf(transferStrategy);
-    uint256 strategyBalanceAfterB = REWARD_B.balanceOf(transferStrategy);
-    uint256 userBalanceAfter = REWARD.balanceOf(to);
-    uint256 userBalanceAfterB = REWARD_B.balanceOf(to);
+    _, amounts = claimAllRewards(e, assets, to);
 
     // effects
+    uint256 strategyBalanceAfter = REWARD.balanceOf(transferStrategy);
+    uint256 strategyBalanceAfter_B = REWARD_B.balanceOf(transferStrategy);
+    uint256 userBalanceAfter = REWARD.balanceOf(to);
+    uint256 userBalanceAfter_B = REWARD_B.balanceOf(to);
     mathint strategyBalanceDecrease = strategyBalanceBefore - strategyBalanceAfter;
-    mathint strategyBalanceDecreaseB = strategyBalanceBeforeB - strategyBalanceAfterB;
+    mathint strategyBalanceDecrease_B = strategyBalanceBefore_B - strategyBalanceAfter_B;
     mathint userBalanceIncrease = userBalanceAfter - userBalanceBefore;
-    mathint userBalanceIncreaseB = userBalanceAfterB - userBalanceBeforeB;
+    mathint userBalanceIncrease_B = userBalanceAfter_B - userBalanceBefore_B;
 
     // postconditions
     assert strategyBalanceDecrease == to_mathint(amounts[0]);
+    assert strategyBalanceDecrease_B == to_mathint(amounts[1]);
     assert userBalanceIncrease == to_mathint(amounts[0]);
-    assert strategyBalanceDecreaseB == to_mathint(amounts[1]);
-    assert userBalanceIncreaseB == to_mathint(amounts[1]);
+    assert userBalanceIncrease_B == to_mathint(amounts[1]);
+}
+
+/**
+ * claimAllRewards function call claims all the rewards so that further claim ends up nothing
+ */
+rule claimAllRewards_claims_all() {
+    env e;
+    address[] assets;
+    address to;
+    
+    address[] rewards = getRewardsList();
+
+    // precondition
+    require to != transferStrategy;
+    require assets.length > 0;
+    require rewards.length >= 2;
+    require rewards[0] == REWARD && rewards[1] == REWARD_B;
+
+    // action 1
+    claimAllRewards(e, assets, to);
+
+    address recipient;
+    uint256 amount;
+    // action 2
+    uint256 claimedReward = claimRewards(e, assets, amount, recipient, REWARD);
+    // action 3
+    uint256 claimedReward_B = claimRewards(e, assets, amount, recipient, REWARD_B);
+
+    // postconditions
+    assert claimedReward == 0;
+    assert claimedReward_B == 0;
 }
