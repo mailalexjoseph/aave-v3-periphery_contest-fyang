@@ -4,11 +4,18 @@ using DummyERC20_rewardToken as REWARD;
 
 methods {
     function getTransferStrategy(address) external returns (address) envfree;
+    function getRewardOracle(address) external returns (address) envfree;
+    function getClaimer(address) external returns (address) envfree;
     function isContract(address) external returns (bool) envfree;
-    function getUserRewards(address[], address, address) external returns (uint256) envfree; 
     function getRewardsList() external returns (address[]) envfree;
+    function getDistributionEnd(address, address) external returns (uint256) envfree;
+    function getEmissionRate(address, address) external returns (uint256) envfree;
+    function getAvailableRewardsCount(address) external returns (uint256) envfree;
+    function isRewardEnabled(address) external returns (bool) envfree;
     function REWARD.balanceOf(address) external returns (uint256) envfree;
+    function EMISSION_MANAGER() external returns (address) envfree;
 }
+
 ///////////////// Properties ///////////////////////
 
 /**
@@ -248,4 +255,148 @@ rule integrity_of_claimRewards() {
     assert claimed <= amount;
     assert strategyBalanceDecrease == to_mathint(claimed);
     assert userBalanceIncrease == to_mathint(claimed);
+}
+
+/**
+ * reward index does not change after its distribution end
+ */
+rule index_not_change_after_distributionEnd() {
+    env e;
+    address[] assets;
+    uint256 amount;
+    address reward;
+    // preconditions
+    require assets.length == 1;
+    require e.block.timestamp > getDistributionEnd(assets[0], reward);
+
+    // action 1
+    claimRewardsToSelf(e, assets, amount, reward); // make sure index gets updated
+    // effect 1
+    uint256 indexBefore = getAssetRewardIndex(assets[0], reward);
+
+    // action 2
+    claimRewardsToSelf(e, assets, amount, reward); // make sure index gets updated again
+    // effect 2
+    uint256 indexAfter = getAssetRewardIndex(assets[0], reward);
+
+    // postcondition
+    assert indexBefore == indexAfter;
+}
+
+/** 
+ * only emission manager can change transferStrategy
+ */
+rule only_emissionManager_changes_transferStrategy(method f) filtered { f -> !f.isView } {
+
+    address reward;
+    address transferStrategyBefore = getTransferStrategy(reward);
+
+    env e; calldataarg args;
+    f(e, args);
+
+    address transferStragegyAfter = getTransferStrategy(reward);
+
+    assert transferStragegyAfter != transferStrategyBefore => e.msg.sender == EMISSION_MANAGER();
+}
+
+
+/** 
+ * only emission manager can change rewardOracle
+ */
+rule only_emissionManager_changes_rewardOracle(method f) filtered { f -> !f.isView } {
+
+    address reward;
+    address rewardOracleBefore = getRewardOracle(reward);
+
+    env e; calldataarg args;
+    f(e, args);
+
+    address rewardOracleAfter = getRewardOracle(reward);
+
+    assert rewardOracleAfter != rewardOracleBefore => e.msg.sender == EMISSION_MANAGER();
+}
+
+
+/** 
+ * only emission manager can change claimer
+ */
+rule only_emissionManager_changes_claimer(method f) filtered { f -> !f.isView } {
+
+    address user;
+    address claimerBefore = getClaimer(user);
+
+    env e; calldataarg args;
+    f(e, args);
+
+    address claimerAfter = getClaimer(user);
+
+    assert claimerAfter != claimerBefore => e.msg.sender == EMISSION_MANAGER();
+}
+
+
+/** 
+ * only emission manager can change distributionEnd
+ */
+rule only_emissionManager_changes_distributionEnd(method f) filtered { f -> !f.isView } {
+
+    address asset; address reward;
+    uint256 distributionEndBefore = getDistributionEnd(asset, reward);
+
+    env e; calldataarg args;
+    f(e, args);
+
+    uint256 distributionEndAfter = getDistributionEnd(asset, reward);
+
+    assert distributionEndAfter != distributionEndBefore => e.msg.sender == EMISSION_MANAGER();
+}
+
+
+/** 
+ * only emission manager can change emission rate
+ */
+rule only_emissionManager_changes_emissionRate(method f) filtered { f -> !f.isView } {
+
+    address asset; address reward;
+    uint256 emissionRateBefore = getEmissionRate(asset, reward);
+
+    env e; calldataarg args;
+    f(e, args);
+
+    uint256 emissionRateAfter = getEmissionRate(asset, reward);
+
+    assert emissionRateAfter != emissionRateBefore => e.msg.sender == EMISSION_MANAGER();
+}
+
+
+/** 
+ * only emission manager can change rewards count
+ */
+rule only_emissionManager_changes_rewardsCount(method f) filtered { f -> !f.isView } {
+
+    address asset; 
+    uint256 rewardsCountBefore = getAvailableRewardsCount(asset);
+
+    env e; calldataarg args;
+    f(e, args);
+
+    uint256 rewardsCountAfter = getAvailableRewardsCount(asset);
+
+    assert rewardsCountAfter != rewardsCountBefore => e.msg.sender == EMISSION_MANAGER();
+}
+
+
+/** 
+ * only emission manager can change reward enabled status
+ */
+rule only_emissionManager_changes_rewardEnabled(method f) filtered { f -> !f.isView } {
+
+    address reward; 
+    bool rewardEnabledBefore = isRewardEnabled(reward);
+
+    env e; calldataarg args;
+    f(e, args);
+
+    bool rewardEnabledAfter = isRewardEnabled(reward);
+
+    assert rewardEnabledAfter != rewardEnabledBefore => e.msg.sender == EMISSION_MANAGER();
 }

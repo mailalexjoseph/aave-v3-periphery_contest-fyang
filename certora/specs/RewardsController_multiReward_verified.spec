@@ -52,7 +52,7 @@ rule integrity_of_claimAllRewards() {
     address to;
     
     address[] rewards = getRewardsList();   
-    // precondition
+    // preconditions
     require to != transferStrategy;
     require assets.length > 0;
     require rewards.length >= 2;
@@ -95,7 +95,7 @@ rule claimAllRewards_claims_all() {
     
     address[] rewards = getRewardsList();
 
-    // precondition
+    // preconditions
     require to != transferStrategy;
     require assets.length > 0;
     require rewards.length >= 2;

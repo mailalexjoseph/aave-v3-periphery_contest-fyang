@@ -11,19 +11,23 @@ contract RewardsControllerHarness is RewardsController {
         return _assets[asset].rewards[reward].index;
     }
 
-    function isRewardEnabled(address asset) external view returns (bool) {
-        return _isRewardEnabled[asset];
+    function getLastUpdateTimestamp(address asset, address reward) external view returns (uint256) {
+        return _assets[asset].rewards[reward].lastUpdateTimestamp;
+    }
+
+    function getEmissionRate(address asset, address reward) external view returns (uint256) {
+        return _assets[asset].rewards[reward].emissionPerSecond;
+    }
+
+    function getAvailableRewardsCount(address asset) external view returns (uint256) {
+        return _assets[asset].availableRewardsCount;
+    }
+
+    function isRewardEnabled(address reward) external view returns (bool) {
+        return _isRewardEnabled[reward];
     }
 
     function isContract(address account) external view returns (bool) {
         return _isContract(account);
     }
-
-    function getRewardsCountByAsset(address asset) external returns (uint256) {
-        return this.getRewardsByAsset(asset).length;
-    }
-
-    function getRewardsCount() external returns (uint256) {
-        return this.getRewardsList().length;
-    } 
 }
