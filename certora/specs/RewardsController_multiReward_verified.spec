@@ -85,7 +85,6 @@ rule integrity_of_claimAllRewards() {
     assert userBalanceIncrease_B == to_mathint(amounts[1]);
 }
 
-
 /**
  * claimAllRewards function call claims all the rewards so that further claim ends up nothing
  */
