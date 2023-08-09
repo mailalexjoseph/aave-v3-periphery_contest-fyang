@@ -257,11 +257,12 @@ rule consistency_between_allUserRewards_and_userRewards() {
  * old index never exceeds new index
  */
 rule old_index_LEQ_new_index() {
+    env e;
     address asset;
     address reward;
     uint256 oldIndex;
     uint256 newIndex;
-    oldIndex, newIndex = getAssetIndex(asset, reward);
+    oldIndex, newIndex = getAssetIndex(e, asset, reward);
     assert oldIndex <= newIndex;
 }
 
