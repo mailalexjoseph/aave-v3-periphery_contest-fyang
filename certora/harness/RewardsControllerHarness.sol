@@ -30,4 +30,8 @@ contract RewardsControllerHarness is RewardsController {
     function isContract(address account) external view returns (bool) {
         return _isContract(account);
     }
+
+    function getAssetsList() external view returns (address[] memory) {
+        return _assetsList;
+    }
 }
