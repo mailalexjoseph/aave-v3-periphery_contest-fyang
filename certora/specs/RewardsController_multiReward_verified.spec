@@ -10,7 +10,6 @@ methods {
     function getAssetDecimals(address) external returns (uint8) envfree;
     function REWARD.balanceOf(address) external returns (uint256) envfree;
     function REWARD_B.balanceOf(address) external returns (uint256) envfree;
-    function getAssetIndex(address, address) external returns (uint256, uint256) envfree;
     function isRewardEnabled(address) external returns (bool) envfree;
 }
 
@@ -257,11 +256,12 @@ rule consistency_between_allUserRewards_and_userRewards() {
  * old index never exceeds new index
  */
 rule old_index_LEQ_new_index() {
+    env e;
     address asset;
     address reward;
     uint256 oldIndex;
     uint256 newIndex;
-    oldIndex, newIndex = getAssetIndex(asset, reward);
+    oldIndex, newIndex = getAssetIndex(e, asset, reward);
     assert oldIndex <= newIndex;
 }
 
