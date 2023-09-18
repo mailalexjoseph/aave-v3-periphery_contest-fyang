@@ -31,7 +31,7 @@ import "methods/Methods_base.spec";
         address[] assets; 
         uint256 l = assets.length;
         address to;
-        claimAllRewards(e, assets, to);
+        claimAllRewards(e, assets, to); 
         storage afterFirst = lastStorage;
         claimAllRewards(e, assets, to);
         storage afterSecond = lastStorage;
